@@ -1,0 +1,6 @@
+<Project>
+  <PropertyGroup>
+    <!-- Point this at your game's Mods folder to deploy on every build. Keep the trailing slash. -->
+    <GameModsDir>C:\path\to\SDEZ\Package\Mods\</GameModsDir>
+  </PropertyGroup>
+</Project>

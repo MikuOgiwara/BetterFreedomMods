@@ -1,0 +1,66 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Release</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <OutputType>Library</OutputType>
+    <RootNamespace>BetterFreedomMode</RootNamespace>
+    <AssemblyName>BetterFreedomMode</AssemblyName>
+    <TargetFramework>net472</TargetFramework>
+    <FileAlignment>512</FileAlignment>
+    <Deterministic>true</Deterministic>
+    <LangVersion>12</LangVersion>
+    <NoWarn>414</NoWarn>
+    <AssemblySearchPaths>$(ProjectDir)Libs/;$(AssemblySearchPaths)</AssemblySearchPaths>
+    <OutputPath>$(ProjectDir)Output/</OutputPath>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <EnableDefaultEmbeddedResourceItems>false</EnableDefaultEmbeddedResourceItems>
+  </PropertyGroup>
+
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugSymbols>false</DebugSymbols>
+    <DebugType>None</DebugType>
+    <Optimize>true</Optimize>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <Prefer32Bit>false</Prefer32Bit>
+  </PropertyGroup>
+
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DefineConstants>DEBUG</DefineConstants>
+  </PropertyGroup>
+
+  <!-- The AquaMai clone is reference material only: never compile it. -->
+  <ItemGroup>
+    <Compile Remove="AquaMai/**" />
+    <Compile Remove="Output/**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="mscorlib" />
+    <Reference Include="0Harmony" />
+    <Reference Include="Assembly-CSharp" />
+    <Reference Include="MelonLoader" />
+    <Reference Include="UnityEngine" />
+    <Reference Include="UnityEngine.CoreModule" />
+  </ItemGroup>
+
+  <!-- Optional local deployment. Copy Local.props.example to Local.props and point GameModsDir at
+       your game's Mods folder to have every build land there. Local.props is gitignored, so no
+       machine-specific path is committed. ContinueOnError keeps a running game (locked file) from
+       failing the build; the message says whether the copy landed. -->
+  <Import Project="Local.props" Condition="Exists('Local.props')" />
+
+  <Target Name="DeployToGame" AfterTargets="Build"
+          Condition="'$(GameModsDir)' != '' And Exists('$(GameModsDir)')">
+    <Copy SourceFiles="$(OutputPath)$(AssemblyName).dll"
+          DestinationFolder="$(GameModsDir)"
+          ContinueOnError="true">
+      <Output TaskParameter="CopiedFiles" ItemName="Deployed" />
+    </Copy>
+    <Message Importance="high" Condition="'@(Deployed)' != ''" Text="Deployed to $(GameModsDir)" />
+    <Warning Condition="'@(Deployed)' == ''" Text="Could not copy to $(GameModsDir) - is the game running?" />
+  </Target>
+
+</Project>

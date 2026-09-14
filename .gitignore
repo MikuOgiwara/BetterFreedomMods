@@ -1,0 +1,20 @@
+# Game assemblies: copyrighted, must never be committed.
+Libs/
+
+# Build artefacts
+Output/
+obj/
+bin/
+
+# Machine-specific deployment path
+Local.props
+
+# Local reference clone of AquaMai (its own git repo)
+AquaMai/
+
+# Editor / OS
+.vs/
+.idea/
+*.user
+Thumbs.db
+desktop.ini
