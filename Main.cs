@@ -4,7 +4,7 @@ namespace BetterFreedomMode;
 
 public class Main : MelonMod
 {
-    public const string Version = "2.8.1";
+    public const string Version = "2.9.0";
     public const string Description = "Better Freedom Mode";
     public const string Author = "Mikuwu";
 
@@ -31,6 +31,7 @@ public class Main : MelonMod
         HarmonyInstance.PatchAll(typeof(FreedomTicketSelect));
         HarmonyInstance.PatchAll(typeof(FreedomExitLeds));
         HarmonyInstance.PatchAll(typeof(FreedomLevelBonusCap));
+        HarmonyInstance.PatchAll(typeof(FreedomLevelBonusDisplay));
         MelonLogger.Msg("Freedom mode: any button confirms, confirmation is on the visible monitor, " +
                         "ending the credit skips the forced last song, credits are reported to the " +
                         "server as normal play, and area select, the map system and ticket select " +

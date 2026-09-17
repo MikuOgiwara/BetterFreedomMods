@@ -50,9 +50,19 @@ public static class FreedomLevelBonusCap
     /// Known limitation, established by testing on a cabinet: above 99 the game does not cope with
     /// the level gain. Configured values are clamped to this rather than passed through.
     /// </summary>
-    private const int HardMax = 99;
+    internal const int HardMax = 99;
 
-    private const int StockCap = 6;
+    internal const int StockCap = 6;
+
+    /// <summary>The cap actually in force, after clamping. Shared with the display fix.</summary>
+    internal static int EffectiveCap
+    {
+        get
+        {
+            var configured = _cap?.Value ?? StockCap;
+            return configured < 1 ? 1 : configured > HardMax ? HardMax : configured;
+        }
+    }
 
     private static MelonPreferences_Entry<int> _cap;
 
@@ -72,7 +82,7 @@ public static class FreedomLevelBonusCap
     {
         var codes = instructions.ToList();
         var configured = _cap?.Value ?? StockCap;
-        var cap = configured < 1 ? 1 : configured > HardMax ? HardMax : configured;
+        var cap = EffectiveCap;
 
         if (cap != configured)
         {
