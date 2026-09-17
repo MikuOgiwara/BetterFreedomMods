@@ -6,50 +6,49 @@ using Monitor;
 namespace BetterFreedomMode;
 
 /// <summary>
-/// In Freedom Mode the operator ends the credit by tapping their Aime on the sub monitor and
-/// then pressing button 4 to confirm (PleaseWaitProcess.OnUpdate, FreedomModeState.TerminationCheck).
-/// That whole flow runs on the monitor with no player entered, so on a 1P cabinet the window opens
-/// on the 2P side: invisible, and driven by buttons that are not wired up.
+/// The termination prompt runs in PleaseWaitProcess, on the monitor with no player entered — on a 1P
+/// cabinet that is the 2P side. MusicSelectProcess keeps running underneath it on the player's side
+/// and reads the same physical buttons, so a press on NEXT reaches music select first and starts a
+/// song instead of answering the prompt.
 ///
-/// Rather than rewriting that state machine — it lives inline in a huge OnUpdate and would need a
-/// transpiler — this reports button 4 as pressed whenever any other button is pressed on *either*
-/// side, for as long as the window is open. Button 5 is likewise accepted from either side so the
-/// stock cancel stays reachable. Everything downstream (LEDs, SE, ForcedTerminationForFreedomMode,
-/// the button 4 press animation) still runs through the stock path.
+/// The stock roles already line up with the labels on screen, so nothing is remapped:
+///
+///     Button04  bottom right  red   NEXT  -> confirm, end the credit
+///     Button05  bottom left   blue  BACK  -> cancel, keep playing
+///
+/// What changes is who gets to see the press. While the prompt is up, the player side is made to
+/// report nothing at all, which both stops music select acting on the press and leaves the six
+/// unrelated buttons inert — matching the LEDs that FreedomExitLeds turns off. The prompt's own side
+/// sees only those two buttons, taken from whichever side was actually pressed, since the 2P
+/// buttons may not exist on a 1P cabinet.
+///
+/// Cancelling restores everything on its own: SetCountDown ends the prompt here and calls
+/// ResetLEDColor in the game, which repaints all eight buttons.
+///
+/// An earlier version let any button confirm, as a way around button 4 seeming unreachable. It is
+/// not unreachable — it is NEXT, and it was being eaten by music select. That workaround is gone:
+/// it would now fire on buttons this prompt is supposed to ignore.
 /// </summary>
 public static class FreedomExitAnyButton
 {
-    /// <summary>Monitor whose termination window is open, or -1 when no window is open.</summary>
+    /// <summary>Monitor whose termination prompt is open, or -1 when none is.</summary>
     private static int _armedMonitor = -1;
 
-    /// <summary>Guards the recursive GetButtonDown calls made while scanning the other buttons.</summary>
-    private static bool _scanning;
-
-    /// <summary>Keeps the substitution log to one line per window instead of one per frame.</summary>
-    private static bool _loggedSubstitution;
-
-    private static MelonPreferences_Entry<bool> _cancelButtonConfirms;
-
     /// <summary>
-    /// Buttons that stand in for button 4. Button 4 itself is excluded (the game already reports it),
-    /// button 5 is the stock cancel, and Select is the service button.
+    /// Set while this patch reads the button state for itself. Without it the player-side
+    /// suppression below would hide the very press being relayed to the prompt.
     /// </summary>
-    private static readonly InputManager.ButtonSetting[] ConfirmButtons =
-    [
-        InputManager.ButtonSetting.Button01,
-        InputManager.ButtonSetting.Button02,
-        InputManager.ButtonSetting.Button03,
-        InputManager.ButtonSetting.Button06,
-        InputManager.ButtonSetting.Button07,
-        InputManager.ButtonSetting.Button08,
-    ];
+    private static bool _reading;
+
+    private static MelonPreferences_Entry<bool> _enabled;
 
     public static void LoadPreferences(MelonPreferences_Category category)
     {
-        _cancelButtonConfirms = category.CreateEntry(
-            "CancelButtonConfirms", false,
-            description: "Let button 5 confirm the Freedom Mode termination too. " +
-                         "When false (default) it keeps cancelling the window, as in the stock game.");
+        _enabled = category.CreateEntry(
+            "ExitPromptOwnsTheButtons", true,
+            description: "While the Freedom Mode termination prompt is up, give it sole use of the " +
+                         "buttons: NEXT confirms, BACK cancels, everything else does nothing and " +
+                         "music select cannot act on the press.");
     }
 
     /// <summary>Only call site is PleaseWaitProcess, right after the swiped Aime matches the player.</summary>
@@ -58,18 +57,17 @@ public static class FreedomExitAnyButton
     public static void PostSetTerminationCheck(PleaseWaitMonitor __instance)
     {
         _armedMonitor = __instance.MonitorIndex;
-        _loggedSubstitution = false;
-        MelonLogger.Msg($"Aime matched: termination window open on monitor {_armedMonitor}. " +
-                        "Any button on either side now confirms; button 5 cancels.");
+        MelonLogger.Msg($"Termination prompt open on monitor {_armedMonitor}: NEXT confirms, " +
+                        "BACK cancels, every other button is inert.");
     }
 
-    /// <summary>Covers all three ways out of TerminationCheck: confirm, cancel, and the 5s timeout.</summary>
+    /// <summary>Covers all three ways out of the prompt: confirm, cancel, and the 5s timeout.</summary>
     [HarmonyPostfix]
     [HarmonyPatch(typeof(PleaseWaitMonitor), nameof(PleaseWaitMonitor.SetCountDown))]
     public static void PostSetCountDown()
     {
         if (_armedMonitor < 0) return;
-        MelonLogger.Msg($"Termination window on monitor {_armedMonitor} closed.");
+        MelonLogger.Msg($"Termination prompt on monitor {_armedMonitor} closed; buttons released.");
         _armedMonitor = -1;
     }
 
@@ -79,63 +77,52 @@ public static class FreedomExitAnyButton
     public static void PostGetButtonDown(int monitorId, InputManager.ButtonSetting button, ref bool __result)
     {
         if (_armedMonitor < 0) return;
-        if (monitorId != _armedMonitor) return;
-        if (__result) return;
-        if (_scanning) return;
+        if (_reading) return;
+        if (_enabled is not { Value: true }) return;
 
-        _scanning = true;
-        try
+        if (monitorId != _armedMonitor)
         {
-            var confirmWithCancelButton = _cancelButtonConfirms is { Value: true };
-
-            if (button == InputManager.ButtonSetting.Button04)
-            {
-                foreach (var candidate in ConfirmButtons)
-                {
-                    if (!IsDownOnEitherSide(candidate)) continue;
-                    Substitute(ref __result, candidate, "confirm");
-                    return;
-                }
-
-                if (confirmWithCancelButton && IsDownOnEitherSide(InputManager.ButtonSetting.Button05))
-                {
-                    Substitute(ref __result, InputManager.ButtonSetting.Button05, "confirm");
-                }
-            }
-            // The stock cancel lives on the same dead 2P side, so relay it from either side too.
-            else if (button == InputManager.ButtonSetting.Button05 && !confirmWithCancelButton)
-            {
-                if (IsDownOnEitherSide(InputManager.ButtonSetting.Button05))
-                {
-                    Substitute(ref __result, InputManager.ButtonSetting.Button05, "cancel");
-                }
-            }
+            // The player's side. Swallow everything so music select cannot start a song on the
+            // press that is meant to answer the prompt.
+            __result = false;
+            return;
         }
-        finally
+
+        if (button != InputManager.ButtonSetting.Button04 &&
+            button != InputManager.ButtonSetting.Button05)
         {
-            _scanning = false;
+            __result = false;
+            return;
         }
-    }
 
-    private static void Substitute(ref bool result, InputManager.ButtonSetting source, string action)
-    {
-        result = true;
-        if (_loggedSubstitution) return;
-        _loggedSubstitution = true;
-        MelonLogger.Msg($"{source} pressed -> {action} freedom mode termination.");
+        var wasDown = __result;
+        __result = IsDownOnEitherSide(button);
+        if (!__result || wasDown) return;
+
+        MelonLogger.Msg(button == InputManager.ButtonSetting.Button04
+            ? "NEXT pressed -> ending the credit."
+            : "BACK pressed -> keeping the credit running.");
     }
 
     /// <summary>
-    /// Reads the button on both player sides. Recursion back into PostGetButtonDown is bounded by
-    /// the _scanning guard, which is already set by the only caller.
+    /// Reads the button on both player sides. The prompt lives on the side whose buttons a 1P
+    /// cabinet does not have, so the press has to be picked up from the other one.
     /// </summary>
     private static bool IsDownOnEitherSide(InputManager.ButtonSetting button)
     {
-        for (var monitor = 0; monitor < 2; monitor++)
+        _reading = true;
+        try
         {
-            if (InputManager.GetButtonDown(monitor, button)) return true;
-        }
+            for (var monitor = 0; monitor < 2; monitor++)
+            {
+                if (InputManager.GetButtonDown(monitor, button)) return true;
+            }
 
-        return false;
+            return false;
+        }
+        finally
+        {
+            _reading = false;
+        }
     }
 }
