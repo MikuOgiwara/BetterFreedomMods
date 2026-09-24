@@ -45,7 +45,7 @@ public static class FreedomConfirmOnMainMonitor
         if (monitorId == target) return;
 
         _redirectedFrom = monitorId;
-        MelonLogger.Msg($"Confirmation window moved from monitor {monitorId} to {target}.");
+        Log.Info($"Confirmation window moved from monitor {monitorId} to {target}.");
         monitorId = target;
     }
 
@@ -77,7 +77,7 @@ public static class FreedomConfirmOnMainMonitor
     public static void PostPleaseWaitRelease()
     {
         if (_redirectedFrom < 0) return;
-        MelonLogger.Warning($"Confirmation redirect from monitor {_redirectedFrom} was never closed; disarming.");
+        Log.Warn($"Confirmation redirect from monitor {_redirectedFrom} was never closed; disarming.");
         _redirectedFrom = -1;
     }
 }

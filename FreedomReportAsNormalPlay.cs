@@ -52,7 +52,7 @@ public static class FreedomReportAsNormalPlay
 
         __result.playMode = 0;
         _gamePlaylogRewrites++;
-        MelonLogger.Msg($"Credit playlog #{_gamePlaylogRewrites}: playMode 1 -> 0 " +
+        Log.Info($"Credit playlog #{_gamePlaylogRewrites}: playMode 1 -> 0 " +
                         $"(playCredit={__result.playCredit}, useTicketId={__result.useTicketId}, " +
                         $"playTrack={__result.playTrack}).");
     }
@@ -68,7 +68,7 @@ public static class FreedomReportAsNormalPlay
         __result.isFreedomMode = false;
         if (__result.playMode == 1) __result.playMode = 0;
         _trackPlaylogRewrites++;
-        MelonLogger.Msg($"Track playlog #{_trackPlaylogRewrites}: isFreedomMode -> false, playMode -> 0.");
+        Log.Info($"Track playlog #{_trackPlaylogRewrites}: isFreedomMode -> false, playMode -> 0.");
     }
 
     /// <summary>
@@ -81,7 +81,7 @@ public static class FreedomReportAsNormalPlay
     public static void PostMusicSelectOnStart()
     {
         if (_gamePlaylogRewrites == 0 && _trackPlaylogRewrites == 0) return;
-        MelonLogger.Msg($"Previous credit rewrote {_gamePlaylogRewrites} credit playlog(s) and " +
+        Log.Info($"Previous credit rewrote {_gamePlaylogRewrites} credit playlog(s) and " +
                         $"{_trackPlaylogRewrites} track playlog(s).");
         _gamePlaylogRewrites = 0;
         _trackPlaylogRewrites = 0;

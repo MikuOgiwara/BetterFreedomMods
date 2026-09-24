@@ -86,13 +86,13 @@ public static class FreedomLevelBonusCap
 
         if (cap != configured)
         {
-            MelonLogger.Warning($"Freedom level bonus cap of {configured} is out of range; using " +
+            Log.Warn($"Freedom level bonus cap of {configured} is out of range; using " +
                                 $"{cap}. Above {HardMax} the game does not cope with the gain.");
         }
 
         if (cap == StockCap)
         {
-            MelonLogger.Msg($"Freedom level bonus left at the stock cap of {StockCap}.");
+            Log.Info($"Freedom level bonus left at the stock cap of {StockCap}.");
             return codes;
         }
 
@@ -108,7 +108,7 @@ public static class FreedomLevelBonusCap
 
         if (matches.Count != 1)
         {
-            MelonLogger.Error($"Freedom level bonus cap not raised: expected exactly one " +
+            Log.Error($"Freedom level bonus cap not raised: expected exactly one " +
                               $"compare-and-clamp on 6 in ViewUpdate, found {matches.Count}. " +
                               "The game build probably differs from the one this was written for; " +
                               "leaving the method untouched.");
@@ -123,7 +123,7 @@ public static class FreedomLevelBonusCap
             codes[index].operand = cap;
         }
 
-        MelonLogger.Msg($"Freedom level bonus cap changed from {StockCap} to {cap}.");
+        Log.Info($"Freedom level bonus cap changed from {StockCap} to {cap}.");
         return codes;
     }
 }

@@ -69,7 +69,7 @@ public static class FreedomLevelBonusDisplay
         }
 
         boxes[2].total = (uint)total;
-        MelonLogger.Msg($"Level-up screen shows {tracks} tracks, {total} levels after bonuses.");
+        Log.Info($"Level-up screen shows {tracks} tracks, {total} levels after bonuses.");
     }
 
     /// <summary>
@@ -92,7 +92,7 @@ public static class FreedomLevelBonusDisplay
                 if (!LevelsBefore.TryGetValue(chara.ID, out var before)) continue;
                 if (chara.Level == before) continue;
 
-                MelonLogger.Msg($"Character {chara.ID}: level {before} -> {chara.Level} " +
+                Log.Info($"Character {chara.ID}: level {before} -> {chara.Level} " +
                                 $"(+{chara.Level - before}).");
             }
         }

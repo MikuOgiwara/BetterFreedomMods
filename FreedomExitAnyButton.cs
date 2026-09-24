@@ -57,7 +57,7 @@ public static class FreedomExitAnyButton
     public static void PostSetTerminationCheck(PleaseWaitMonitor __instance)
     {
         _armedMonitor = __instance.MonitorIndex;
-        MelonLogger.Msg($"Termination prompt open on monitor {_armedMonitor}: NEXT confirms, " +
+        Log.Info($"Termination prompt open on monitor {_armedMonitor}: NEXT confirms, " +
                         "BACK cancels, every other button is inert.");
     }
 
@@ -67,7 +67,7 @@ public static class FreedomExitAnyButton
     public static void PostSetCountDown()
     {
         if (_armedMonitor < 0) return;
-        MelonLogger.Msg($"Termination prompt on monitor {_armedMonitor} closed; buttons released.");
+        Log.Info($"Termination prompt on monitor {_armedMonitor} closed; buttons released.");
         _armedMonitor = -1;
     }
 
@@ -99,7 +99,7 @@ public static class FreedomExitAnyButton
         __result = IsDownOnEitherSide(button);
         if (!__result || wasDown) return;
 
-        MelonLogger.Msg(button == InputManager.ButtonSetting.Button04
+        Log.Info(button == InputManager.ButtonSetting.Button04
             ? "NEXT pressed -> ending the credit."
             : "BACK pressed -> keeping the credit running.");
     }

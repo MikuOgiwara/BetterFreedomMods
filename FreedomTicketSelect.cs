@@ -46,7 +46,7 @@ public static class FreedomTicketSelect
 
         if (!on || _loggedFirstWindow || !FreedomFlagScope.IsHeld) return;
         _loggedFirstWindow = true;
-        MelonLogger.Msg("Ticket select is being initialised as a normal credit.");
+        Log.Info("Ticket select is being initialised as a normal credit.");
     }
 
     /// <summary>Finalizer, not postfix: the flag must come back even if Initialize throws.</summary>

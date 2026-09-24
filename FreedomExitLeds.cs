@@ -146,7 +146,7 @@ public static class FreedomExitLeds
         _promptOpen = true;
         LateWrites.Clear();
         WriteEveryDevice(restore: false);
-        MelonLogger.Msg("Termination prompt owns the lamps: NEXT and BACK lit, the rest off.");
+        Log.Info("Termination prompt owns the lamps: NEXT and BACK lit, the rest off.");
     }
 
     [HarmonyPostfix]
@@ -157,7 +157,7 @@ public static class FreedomExitLeds
 
         _promptOpen = false;
         WriteEveryDevice(restore: true);
-        MelonLogger.Msg("Termination prompt closed: lamps restored.");
+        Log.Info("Termination prompt closed: lamps restored.");
     }
 
     private static Color32[] Lamps(Bd15070_4IF device)
@@ -208,6 +208,6 @@ public static class FreedomExitLeds
         if (color is { r: 0, g: 0, b: 0 }) return;
         if (!LateWrites.Add((ledPos, setter))) return;
 
-        MelonLogger.Msg($"Overrode a late {setter} on lamp {ledPos} ({color.r},{color.g},{color.b}).");
+        Log.Info($"Overrode a late {setter} on lamp {ledPos} ({color.r},{color.g},{color.b}).");
     }
 }

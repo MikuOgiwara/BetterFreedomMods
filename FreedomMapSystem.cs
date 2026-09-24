@@ -71,7 +71,7 @@ public static class FreedomMapSystem
         Exit();
         if (GameManager.IsFreedomMode && (GameManager.NextMapSelect || GameManager.NextCharaSelect))
         {
-            MelonLogger.Msg("Freedom mode unlock: routing to " +
+            Log.Info("Freedom mode unlock: routing to " +
                             $"{(GameManager.NextMapSelect ? "map" : "character")} select.");
         }
 
@@ -117,7 +117,7 @@ public static class FreedomMapSystem
     [HarmonyPatch(typeof(MapResultProcess), "OnStart")]
     public static void PostMapResultOnStart()
     {
-        MelonLogger.Msg($"MapResultProcess opened (freedom={GameManager.IsFreedomMode}, " +
+        Log.Info($"MapResultProcess opened (freedom={GameManager.IsFreedomMode}, " +
                         $"track={GameManager.MusicTrackNumber}, timeUp={GameManager.IsFreedomTimeUp}). " +
                         $"IsFreedomMapSkip overridden {_flips}x, only inside whitelisted callers.");
     }

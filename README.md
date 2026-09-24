@@ -3,7 +3,8 @@
 A standalone MelonLoader mod for SDEZ. It makes **Freedom Mode** usable on a single-screen cabinet,
 and gives it back the systems the game takes away from it.
 
-Tested on `Ver.DX1.68-E`, running alongside AquaMai.
+Tested on CiRCLE PLUS (`Ver.DX1.68-E`) and Magical Code, running alongside AquaMai.
+The patched methods are identical across both, so there is no per-version code.
 
 ## What it does
 
@@ -37,6 +38,7 @@ AreaSelectInFreedom           = true   # bring AREA SELECT back
 EnableMapSystemInFreedom      = true   # map/character select + bonus markers
 TicketSelectInFreedom         = true   # bring the ticket choice back
 FreedomLevelBonusCap          = 99     # character levels one credit may grant; stock is 6
+VerboseLogging                = false  # log what each patch does; on before reporting a problem
 ```
 
 Two settings are worth a second look.

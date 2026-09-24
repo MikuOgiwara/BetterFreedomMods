@@ -61,7 +61,7 @@ public static class FreedomAreaSelect
 
         if (!on || _loggedFirstWindow || !FreedomFlagScope.IsHeld) return;
         _loggedFirstWindow = true;
-        MelonLogger.Msg("Routing window is live: IsFreedomMode reads false while the credit-start " +
+        Log.Info("Routing window is live: IsFreedomMode reads false while the credit-start " +
                         "screens choose the next process.");
     }
 
@@ -97,6 +97,6 @@ public static class FreedomAreaSelect
     [HarmonyPatch(typeof(RegionalSelectProcess), "OnStart")]
     public static void PostRegionalSelectOnStart()
     {
-        MelonLogger.Msg("AREA SELECT opened.");
+        Log.Info("AREA SELECT opened.");
     }
 }

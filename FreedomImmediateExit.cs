@@ -78,7 +78,7 @@ public static class FreedomImmediateExit
         // The credit totals cannot be built from an empty score log; see the class remarks.
         if (!Singleton<GamePlayManager>.Instance.IsPlayLog())
         {
-            MelonLogger.Msg("No track played yet; letting the stock forced song run so the credit can total up.");
+            Log.Info("No track played yet; letting the stock forced song run so the credit can total up.");
             return true;
         }
 
@@ -86,7 +86,7 @@ public static class FreedomImmediateExit
         if (container?.processManager == null)
         {
             // Never leave the player stuck: fall back to the stock forced song.
-            MelonLogger.Warning("Could not reach the process manager; letting the stock forced song run.");
+            Log.Warn("Could not reach the process manager; letting the stock forced song run.");
             return true;
         }
 
@@ -109,7 +109,7 @@ public static class FreedomImmediateExit
                 if (mapMaster.IsCallAwake[i] || mapMaster.IsNeedAwake[i]) continue;
 
                 mapMaster.IsCallAwake[i] = true;
-                MelonLogger.Msg($"Marking player {i}'s character awakening as handled so the ending " +
+                Log.Info($"Marking player {i}'s character awakening as handled so the ending " +
                                 "does not bounce back to music select for another track.");
             }
         }
@@ -120,7 +120,7 @@ public static class FreedomImmediateExit
         var finishedTracks = (uint)Singleton<GamePlayManager>.Instance.GetScoreListCount();
         if (GameManager.MusicTrackNumber != finishedTracks)
         {
-            MelonLogger.Msg($"Rewinding MusicTrackNumber {GameManager.MusicTrackNumber} -> {finishedTracks} " +
+            Log.Info($"Rewinding MusicTrackNumber {GameManager.MusicTrackNumber} -> {finishedTracks} " +
                             "to match the finished-track count.");
             GameManager.MusicTrackNumber = finishedTracks;
         }
@@ -148,14 +148,14 @@ public static class FreedomImmediateExit
         {
             container.processManager.AddProcess(
                 new FadeProcess(container, __instance, new MapResultProcess(container)), 50);
-            MelonLogger.Msg("Freedom mode over at music select: skipping the forced last song, " +
+            Log.Info("Freedom mode over at music select: skipping the forced last song, " +
                             "via the map result screen.");
             return false;
         }
 
         // Same shape as the nine stock call sites; the FadeProcess base releases __instance for us.
         container.processManager.AddProcess(new NextTrackProcess(container, __instance), 50);
-        MelonLogger.Msg("Freedom mode over at music select: skipping the forced last song.");
+        Log.Info("Freedom mode over at music select: skipping the forced last song.");
         return false;
     }
 
@@ -176,7 +176,7 @@ public static class FreedomImmediateExit
     {
         if (!_creditIsEnding) return true;
 
-        MelonLogger.Warning("Refusing to restart the Freedom clock: this credit is already ending.");
+        Log.Warn("Refusing to restart the Freedom clock: this credit is already ending.");
         return false;
     }
 
@@ -199,7 +199,7 @@ public static class FreedomImmediateExit
     public static bool PreCheckAchieveTrack()
     {
         if (!_exiting) return true;
-        MelonLogger.Msg("Skipping per-track achievement check: no track finished on this transition.");
+        Log.Info("Skipping per-track achievement check: no track finished on this transition.");
         return false;
     }
 }
